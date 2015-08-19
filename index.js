@@ -90,11 +90,6 @@ var TeamcityReporter = function (baseReporterDecorator) {
   this.onRunComplete = function () {
     Object.keys(this.browserResults).forEach(function (browserId) {
       var browserResult = self.browserResults[browserId]
-      var log = browserResult.log
-      if (browserResult.lastSuite) {
-        log.push(formatMessage(self.SUITE_END, browserResult.lastSuite))
-      }
-
       self.flushLogs(browserResult)
     })
     self.write(formatMessage(self.BLOCK_CLOSED, 'JavaScript Unit Tests'))
@@ -102,23 +97,7 @@ var TeamcityReporter = function (baseReporterDecorator) {
 
   this.getLog = function (browser, result) {
     var browserResult = this.browserResults[browser.id]
-    var suiteName = browser.name
-    var moduleName = result.suite.join(' ')
-
-    if (moduleName) {
-      suiteName = moduleName.concat('.', suiteName)
-    }
-
-    var log = browserResult.log
-    if (browserResult.lastSuite !== suiteName) {
-      if (browserResult.lastSuite) {
-        log.push(formatMessage(this.SUITE_END, browserResult.lastSuite))
-      }
-      this.flushLogs(browserResult)
-      browserResult.lastSuite = suiteName
-      log.push(formatMessage(this.SUITE_START, suiteName))
-    }
-    return log
+    return browserResult.log
   }
 
   this.flushLogs = function (browserResult) {
