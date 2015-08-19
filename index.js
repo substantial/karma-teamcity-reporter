@@ -46,69 +46,35 @@ var TeamcityReporter = function (baseReporterDecorator) {
   this.BLOCK_OPENED = "##teamcity[blockOpened name='%s']"
   this.BLOCK_CLOSED = "##teamcity[blockClosed name='%s']"
 
-  var reporter = this
-  var initializeBrowser = function (browser) {
-    reporter.browserResults[browser.id] = {
-      name: browser.name,
-      log: [],
-      lastSuite: null
-    }
-  }
-
   this.onRunStart = function (browsers) {
     this.write(formatMessage(this.BLOCK_OPENED, 'JavaScript Unit Tests'))
 
-    this.browserResults = {}
-    // Support Karma 0.10 (TODO: remove)
-    browsers.forEach(initializeBrowser)
-  }
-
-  this.onBrowserStart = function (browser) {
-    initializeBrowser(browser)
+    this._browsers = []
   }
 
   this.specSuccess = function (browser, result) {
-    var log = this.getLog(browser, result)
     var testName = fullTestName(result)
 
-    log.push(formatMessage(this.TEST_START, testName))
-    log.push(formatMessage(this.TEST_END, testName, result.time))
+    this.write(formatMessage(this.TEST_START, testName))
+    this.write(formatMessage(this.TEST_END, testName, result.time))
   }
 
   this.specFailure = function (browser, result) {
-    var log = this.getLog(browser, result)
     var testName = fullTestName(result)
 
-    log.push(formatMessage(this.TEST_START, testName))
-    log.push(formatMessage(this.TEST_FAILED, testName, result.log.join('\n\n')))
-    log.push(formatMessage(this.TEST_END, testName, result.time))
+    this.write(formatMessage(this.TEST_START, testName))
+    this.write(formatMessage(this.TEST_FAILED, testName, result.log.join('\n\n')))
+    this.write(formatMessage(this.TEST_END, testName, result.time))
   }
 
   this.specSkipped = function (browser, result) {
-    var log = this.getLog(browser, result)
     var testName = fullTestName(result)
 
-    log.push(formatMessage(this.TEST_IGNORED, testName))
+    this.write(formatMessage(this.TEST_IGNORED, testName))
   }
 
   this.onRunComplete = function () {
-    Object.keys(this.browserResults).forEach(function (browserId) {
-      var browserResult = self.browserResults[browserId]
-      self.flushLogs(browserResult)
-    })
     self.write(formatMessage(self.BLOCK_CLOSED, 'JavaScript Unit Tests'))
-  }
-
-  this.getLog = function (browser, result) {
-    var browserResult = this.browserResults[browser.id]
-    return browserResult.log
-  }
-
-  this.flushLogs = function (browserResult) {
-    self.write(browserResult.log.join(''))
-    while (browserResult.log.length > 0) {
-      browserResult.log.shift()
-    }
   }
 }
 
