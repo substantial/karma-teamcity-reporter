@@ -27,6 +27,10 @@ var formatMessage = function () {
   return util.format.apply(null, args) + '\n'
 }
 
+var fullTestName = function (result) {
+  return result.suite.join(' ') + ' ' + result.description
+}
+
 var TeamcityReporter = function (baseReporterDecorator) {
   baseReporterDecorator(this)
   var self = this
@@ -65,7 +69,7 @@ var TeamcityReporter = function (baseReporterDecorator) {
 
   this.specSuccess = function (browser, result) {
     var log = this.getLog(browser, result)
-    var testName = result.description
+    var testName = fullTestName(result)
 
     log.push(formatMessage(this.TEST_START, testName))
     log.push(formatMessage(this.TEST_END, testName, result.time))
@@ -73,7 +77,7 @@ var TeamcityReporter = function (baseReporterDecorator) {
 
   this.specFailure = function (browser, result) {
     var log = this.getLog(browser, result)
-    var testName = result.description
+    var testName = fullTestName(result)
 
     log.push(formatMessage(this.TEST_START, testName))
     log.push(formatMessage(this.TEST_FAILED, testName, result.log.join('\n\n')))
@@ -82,7 +86,7 @@ var TeamcityReporter = function (baseReporterDecorator) {
 
   this.specSkipped = function (browser, result) {
     var log = this.getLog(browser, result)
-    var testName = result.description
+    var testName = fullTestName(result)
 
     log.push(formatMessage(this.TEST_IGNORED, testName))
   }
